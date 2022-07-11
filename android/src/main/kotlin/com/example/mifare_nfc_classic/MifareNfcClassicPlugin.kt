@@ -58,10 +58,10 @@ class MifareNfcClassicPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         val password: String? = call.argument<String>("password")
         val blockIndex: Int? = call.argument<Int>("blockIndex")
-        val blocksIndex: List<Int>? = call.argument<List<Int>>("blockIndex")
+        val blocksIndex: List<Int>? = call.argument<List<Int>>("blocksIndex")
         val sectorIndex: Int? = call.argument<Int>("sectorIndex")
         val message: String? = call.argument<String>("message")
-        val messages: List<String>? = call.argument<List<String>>("message")
+        val messages: List<String>? = call.argument<List<String>>("messages")
         when (call.method) {
             "readBlock" -> {
                 readBlock(result = result, blockIndex = blockIndex!!, password = password)
