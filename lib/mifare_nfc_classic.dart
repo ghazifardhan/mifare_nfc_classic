@@ -32,6 +32,19 @@ class MifareNfcClassic {
     Logger().i(response);
   }
 
+  static Future<void> writeMultipleBlock({
+    @required List<int> blocksIndex,
+    @required List<String> messages,
+    String password,
+  }) async {
+    final response = await _channel.invokeMethod('writeMultipleBloc', {
+      'blocksIndex': blocksIndex,
+      'messages': messages,
+      'password': password,
+    });
+    Logger().i(response);
+  }
+
   static Future<Map<String, dynamic>> overwriteBlock({
     @required int blockIndex,
     @required String message,
