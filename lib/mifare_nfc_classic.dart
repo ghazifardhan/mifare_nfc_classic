@@ -19,6 +19,18 @@ class MifareNfcClassic {
     return response as String;
   }
 
+  static Future<List<String>> readMultipleBloc({
+    @required List<int> blocksIndex,
+    String password,
+  }) async {
+    final response = await _channel.invokeMethod('readMultipleBloc', {
+      'blocksIndex': blocksIndex,
+      'password': password,
+    });
+    Logger().i(response);
+    return response as List<String>;
+  }
+
   static Future<void> writeBlock({
     @required int blockIndex,
     @required String message,

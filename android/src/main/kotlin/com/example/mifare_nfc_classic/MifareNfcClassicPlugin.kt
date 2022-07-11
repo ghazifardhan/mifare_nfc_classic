@@ -66,6 +66,9 @@ class MifareNfcClassicPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "readBlock" -> {
                 readBlock(result = result, blockIndex = blockIndex!!, password = password)
             }
+            "readMultipleBlock" -> {
+                readMultipleBlock(result = result, blocksIndex = blocksIndex!!, password = password)
+            }
             "writeBlock" -> {
                 writeBlock(result = result, blockIndex = blockIndex!!, message = message!!, password = password)
             }
@@ -149,6 +152,40 @@ class MifareNfcClassicPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 mNfcAdapter?.disableReaderMode(activity)
             }
         }, flag, null)
+    }
+
+    private fun readMultipleBlock(result: Result, blocksIndex: List<Int>, password: String?) {
+        try {
+            if (!mifareClassic.isConnected) {
+                mifareClassic.connect()
+            }
+
+            val sectorPassword: ByteArray = if (password.isNullOrEmpty()) {
+                MifareClassic.KEY_DEFAULT
+            } else {
+                Utils.rawHexToByteArray(hex = password)
+            }
+
+            val results: ArrayList<String> = ArrayList();
+
+            blocksIndex.forEachIndexed { index, item ->
+                val sectorIndex = mifareClassic.blockToSector(item)
+                mifareClassic.authenticateSectorWithKeyA(sectorIndex, sectorPassword)
+                var blockBytes = mifareClassic.readBlock(item)
+                if (blockBytes.size < 16) {
+                    throw IOException()
+                }
+                if (blockBytes.size > 16) {
+                    blockBytes = blockBytes.copyOf(16)
+                    Utils.byteArray2Hex(blockBytes)?.let { results.add(it) }
+                    Log.d(TAG, "readBlock: ${Utils.byteArray2Hex(blockBytes)}")
+                }
+            }
+            mifareClassic.close()
+            result.success(results)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun writeMultipleBloc(result: Result, blocksIndex: List<Int>, messages: List<String>, password: String?) {
