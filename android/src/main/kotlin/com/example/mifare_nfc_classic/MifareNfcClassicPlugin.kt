@@ -155,6 +155,9 @@ class MifareNfcClassicPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         var didWrite = true;
         mNfcAdapter?.enableReaderMode(activity, { tag ->
             try {
+                mifareClassic = MifareClassic.get(tag)
+                mifareClassic.connect()
+
                 val sectorPassword: ByteArray = if (password.isNullOrEmpty()) {
                     MifareClassic.KEY_DEFAULT
                 } else {
@@ -167,8 +170,6 @@ class MifareNfcClassicPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                         val diff = 32 - messageAsHex!!.length
                         messageAsHex = "$messageAsHex${"0".repeat(diff)}"
                         Log.d(TAG, "writeBlockOfSector$element : $messageAsHex")
-                        mifareClassic = MifareClassic.get(tag)
-                        mifareClassic.connect()
                         val sectorIndex = mifareClassic.blockToSector(element)
                         mifareClassic.authenticateSectorWithKeyA(sectorIndex, sectorPassword)
                         mifareClassic.writeBlock(element, Utils.hex2ByteArray(messageAsHex))
