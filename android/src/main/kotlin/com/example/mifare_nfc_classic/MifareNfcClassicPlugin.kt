@@ -155,37 +155,40 @@ class MifareNfcClassicPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     private fun readMultipleBlock(result: Result, blocksIndex: List<Int>, password: String?) {
-        try {
-            if (!mifareClassic.isConnected) {
+        mNfcAdapter?.enableReaderMode(activity, { tag ->
+            try {
+                val sectorPassword: ByteArray = if (password.isNullOrEmpty()) {
+                    MifareClassic.KEY_DEFAULT
+                } else {
+                    Utils.rawHexToByteArray(hex = password)
+                }
+
+                mifareClassic = MifareClassic.get(tag)
                 mifareClassic.connect()
-            }
 
-            val sectorPassword: ByteArray = if (password.isNullOrEmpty()) {
-                MifareClassic.KEY_DEFAULT
-            } else {
-                Utils.rawHexToByteArray(hex = password)
-            }
+                val results: ArrayList<String> = ArrayList();
 
-            val results: ArrayList<String> = ArrayList();
-
-            blocksIndex.forEachIndexed { index, item ->
-                val sectorIndex = mifareClassic.blockToSector(item)
-                mifareClassic.authenticateSectorWithKeyA(sectorIndex, sectorPassword)
-                var blockBytes = mifareClassic.readBlock(item)
-                if (blockBytes.size < 16) {
-                    throw IOException()
+                blocksIndex.forEachIndexed { index, item ->
+                    val sectorIndex = mifareClassic.blockToSector(item)
+                    mifareClassic.authenticateSectorWithKeyA(sectorIndex, sectorPassword)
+                    var blockBytes = mifareClassic.readBlock(item)
+                    if (blockBytes.size < 16) {
+                        throw IOException()
+                    }
+                    if (blockBytes.size > 16) {
+                        blockBytes = blockBytes.copyOf(16)
+                        Utils.byteArray2Hex(blockBytes)?.let { results.add(it) }
+                        Log.d(TAG, "readBlock: ${Utils.byteArray2Hex(blockBytes)}")
+                    }
                 }
-                if (blockBytes.size > 16) {
-                    blockBytes = blockBytes.copyOf(16)
-                    Utils.byteArray2Hex(blockBytes)?.let { results.add(it) }
-                    Log.d(TAG, "readBlock: ${Utils.byteArray2Hex(blockBytes)}")
-                }
+                activity.runOnUiThread { result.success(results) }
+            } catch (e: Exception) {
+                activity.runOnUiThread { result.error("404", e.localizedMessage, null) }
+            } finally {
+                mifareClassic.close()
+                mNfcAdapter?.disableReaderMode(activity)
             }
-            mifareClassic.close()
-            result.success(results)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        }, flag, null)
     }
 
     private fun writeMultipleBloc(result: Result, blocksIndex: List<Int>, messages: List<String>, password: String?) {
