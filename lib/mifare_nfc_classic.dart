@@ -19,7 +19,7 @@ class MifareNfcClassic {
     return response as String;
   }
 
-  static Future<List<String>> readMultipleBlock({
+  static Future<List<dynamic>> readMultipleBlock({
     @required List<int> blocksIndex,
     String password,
   }) async {
@@ -28,7 +28,7 @@ class MifareNfcClassic {
       'password': password,
     });
     Logger().i(response);
-    return response as List<String>;
+    return response as List<dynamic>;
   }
 
   static Future<void> writeBlock({
