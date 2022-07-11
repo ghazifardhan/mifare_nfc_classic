@@ -19,11 +19,11 @@ class MifareNfcClassic {
     return response as String;
   }
 
-  static Future<List<String>> readMultipleBloc({
+  static Future<List<String>> readMultipleBlock({
     @required List<int> blocksIndex,
     String password,
   }) async {
-    final response = await _channel.invokeMethod('readMultipleBloc', {
+    final response = await _channel.invokeMethod('readMultipleBlock', {
       'blocksIndex': blocksIndex,
       'password': password,
     });
